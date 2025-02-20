@@ -3,12 +3,28 @@ import express, { Application, urlencoded, Request, Response} from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { createServer } from 'node:http'
 import path from 'node:path'
+import { Pool } from 'pg'
+import { createClient } from '@supabase/supabase-js'
+
+
+
 
 
 dotenv.config();
 const app: Application = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 4000;
+const pool = new Pool()
+
+const supabaseUrl = process.env.SUPABASE_URL || ''
+const supabaseKey = process.env.SUPABASE_KEY || ''
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+pool.on('error', (err, client) => {
+    console.error('Unexpected error on idle client', err)
+    process.exit(-1)
+})
+
 
 app.set('view engine', 'ejs');
 app.set('views',path.join(__dirname,'../public'));
@@ -16,15 +32,21 @@ app.use(express.json());
 app.use(urlencoded({ extended: true }));
 
 
-
-
-
-
-app.get('/', (req: Request, res: Response) => {
-    const data = {
+app.get('/',async (req: Request, res: Response) => {
+    const datas = {
         name: 'Tsitohaina'
     }
-    res.status(StatusCodes.OK).render('index',data)
+    try {
+        const { data,error } = await supabase.from('noms').insert([{ nom : "Tsitohaina"}])
+        if (error){
+            console.error("Erreur lors de l'insertion:",error.message)
+            return
+        } 
+        console.log("Nom enregistrer avec succès: ",data);
+        res.status(StatusCodes.OK).render('index',datas)
+    } catch (error) {
+        throw error
+    }
 })
 
 app.get('/about', (req: Request, res: Response) => {
