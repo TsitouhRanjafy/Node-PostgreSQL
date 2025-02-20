@@ -1,11 +1,12 @@
 <%- include("__header") -%>
 
-<h1 class="px-10 text-3xl text-[whitesmoke]"><%= model.titre %></h1>
+<h1 class="px-10 text-3xl text-[whitesmoke]">Données</h1>
+
 
 <ul class="px-10 text-[whitesmoke]">
 
-  <% for (let i = 0; i < model.items.length; i++) { %>
-    <li class="px-10 text-[whitesmoke]"><%= model.items[i] %></li>
+  <% for (let i = 0; i < model.length; i++) { %>
+    <li class="px-10 text-[whitesmoke]"><%- model[i].id -%> |  <%= model[i].nom %></li>
   <% } %>
 
 </ul>

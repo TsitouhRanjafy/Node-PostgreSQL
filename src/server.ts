@@ -33,32 +33,40 @@ app.use(urlencoded({ extended: true }));
 
 
 app.get('/',async (req: Request, res: Response) => {
-    const datas = {
-        name: 'Tsitohaina'
+
+    const nom = req.query.nom
+    if (!nom){
+        res.status(StatusCodes.BAD_REQUEST).send("query nom required")
+        return
     }
-    try {
-        const { data,error } = await supabase.from('noms').insert([{ nom : "Tsitohaina"}])
-        if (error){
-            console.error("Erreur lors de l'insertion:",error.message)
-            return
-        } 
-        console.log("Nom enregistrer avec succès: ",data);
-        res.status(StatusCodes.OK).render('index',datas)
-    } catch (error) {
-        throw error
-    }
+    const { data,error } = await supabase.from('noms').insert([{ nom : nom}])
+    if (error){
+        console.error("Erreur lors de l'insertion:",error.message)
+        return
+    } 
+    console.log("Nom enregistrer avec succès: ",data);
+    res.status(StatusCodes.OK).render('index',{ name: nom })
 })
 
 app.get('/about', (req: Request, res: Response) => {
     res.status(StatusCodes.OK).render('about')
 })
 
-app.get('/data', (req: Request, res: Response) => {
+app.get('/data', async (req: Request, res: Response) => {
     const test = {
         titre: 'test',
         items: ['un','deux','trois']
     }
-    res.status(StatusCodes.OK).render('data',{ model: test })
+    let { data: noms,error } = await supabase
+        .from('noms')
+        .select('*')
+    if (error){
+        console.error("Erreur lors de récupération des données:",error);
+        return
+    }
+    console.log("+++++++",noms);
+    
+    res.status(StatusCodes.OK).render('data',{model: noms})
 })
 
 server.listen(PORT, () => {
